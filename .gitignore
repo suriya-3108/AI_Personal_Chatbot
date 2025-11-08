@@ -6,7 +6,6 @@ __pycache__/
 *.db
 *.sqlite3
 instance/
-.env
 venv/
 *.log
 uploads/
@@ -15,7 +14,6 @@ tmp/
 *.swp
 
 # ===== Flask specific =====
-# Ignore Flask cache or compiled templates
 *.pid
 *.py[cod]
 *.so
@@ -35,8 +33,7 @@ frontend/.DS_Store
 *.env.development
 *.env.production
 
-# ===== VS Code  =====
-# Ignore everything in .vscode but allow shared config files
+# ===== VS Code =====
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
@@ -49,7 +46,6 @@ Thumbs.db
 *.iml
 
 # ===== Cache / Build =====
-__pycache__/
 .cache/
 *.egg-info/
 build/
