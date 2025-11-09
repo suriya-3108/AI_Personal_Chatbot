@@ -19,7 +19,7 @@ class MemoryManager:
             'password': password_hash,
             'preferred_name': preferred_name,
             'chatbot_name': chatbot_name,
-            'theme_preference': 'dark',
+            'theme_preference': 'light',
             'voice_enabled': True,
             'created_at': datetime.utcnow()
         }

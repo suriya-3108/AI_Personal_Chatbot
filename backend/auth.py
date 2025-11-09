@@ -36,6 +36,9 @@ def register_routes(app):
             if memory_manager.get_user_by_username(data['username']):
                 return jsonify({'error': 'Username already exists'}), 409
             
+            if memory_manager.get_user_by_email(data['email']):
+                return jsonify({'error': 'Email already exists'}), 409
+            
             # Hash password
             password_hash = generate_password_hash(data['password'])
             
@@ -89,7 +92,7 @@ def register_routes(app):
                 'user_id': str(user['_id']),
                 'preferred_name': user['preferred_name'],
                 'chatbot_name': user['chatbot_name'],
-                'theme_preference': user.get('theme_preference', 'dark')
+                'theme_preference': user.get('theme_preference', 'light')  # FIXED: Changed 'dark' to 'light'
             }), 200
             
         except Exception as e:
@@ -110,7 +113,7 @@ def register_routes(app):
                 'email': user['email'],
                 'preferred_name': user['preferred_name'],
                 'chatbot_name': user['chatbot_name'],
-                'theme_preference': user.get('theme_preference', 'dark'),
+                'theme_preference': user.get('theme_preference', 'light'),  # FIXED: Changed 'dark' to 'light'
                 'voice_enabled': user.get('voice_enabled', True)
             }), 200
             

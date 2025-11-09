@@ -25,7 +25,7 @@ const Login = ({ theme, onLogin }) => {
           user_id: response.data.user_id,
           preferred_name: response.data.preferred_name,
           chatbot_name: response.data.chatbot_name,
-          theme_preference: response.data.theme_preference,
+          theme_preference: response.data.theme_preference || 'light', // Added fallback
           email: formData.email,
         };
         localStorage.setItem("token", response.data.access_token);
@@ -141,7 +141,7 @@ const Login = ({ theme, onLogin }) => {
 
           <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
             <p className="text-gray-600 dark:text-gray-400">
-              Don’t have an account?{" "}
+              Don't have an account?{" "}
               <Link to="/signup" className="font-semibold text-black dark:text-white hover:underline">
                 Create one
               </Link>

@@ -63,12 +63,21 @@ function App() {
 
   const handleThemeChange = (newTheme) => setTheme(newTheme);
 
-  const handleLogin = (userData) => {
-    console.log("User logged in:", userData);
-    setUser(userData);
-    setIsAuthenticated(true);
-    loadChatHistory();
+const handleLogin = (userData) => {
+  console.log("User logged in:", userData);
+  // Ensure consistent user object structure
+  const user = {
+    user_id: userData.user_id || userData.id,
+    preferred_name: userData.preferred_name,
+    chatbot_name: userData.chatbot_name,
+    email: userData.email,
+    theme_preference: userData.theme_preference || 'light'
   };
+  
+  setUser(user);
+  setIsAuthenticated(true);
+  loadChatHistory();
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");

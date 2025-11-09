@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Bot, Eye, EyeOff, MessageSquare } from "lucide-react";
 import { authAPI } from "../api";
 
-const SignUp = ({ theme, onThemeChange, onLogin }) => {
+const SignUp = ({ theme, onLogin }) => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -15,11 +15,6 @@ const SignUp = ({ theme, onThemeChange, onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) navigate("/chat");
-  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,17 +31,21 @@ const SignUp = ({ theme, onThemeChange, onLogin }) => {
         localStorage.setItem(
           "user",
           JSON.stringify({
-            id: response.data.user_id,
+            user_id: response.data.user_id, // FIXED: Changed 'id' to 'user_id'
             preferred_name: response.data.preferred_name,
             chatbot_name: response.data.chatbot_name,
+            email: formData.email, // Added email for consistency
           })
         );
-        if (onLogin)
+        if (onLogin) {
           onLogin({
-            id: response.data.user_id,
+            user_id: response.data.user_id, // FIXED: Changed 'id' to 'user_id'
             preferred_name: response.data.preferred_name,
             chatbot_name: response.data.chatbot_name,
+            email: formData.email,
+            theme_preference: 'light' // Default to light theme
           });
+        }
         navigate("/chat");
       }
     } catch (error) {
@@ -63,8 +62,8 @@ const SignUp = ({ theme, onThemeChange, onLogin }) => {
     <div
       className={`min-h-screen flex items-center justify-center p-6 transition-colors duration-300 ${
         theme === "dark"
-          ? "bg-[var(--bg-dark)]"
-          : "bg-[var(--bg-light)]"
+          ? "bg-gradient-to-br from-black to-gray-900"
+          : "bg-gradient-to-br from-gray-100 to-white"
       }`}
     >
       <div className="max-w-md w-full">

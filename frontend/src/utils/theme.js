@@ -7,7 +7,8 @@ export const themes = {
 };
 
 export const getStoredTheme = () => {
-  return localStorage.getItem(THEME_KEY) || themes.dark;
+  // FIXED: Default to light theme instead of dark
+  return localStorage.getItem(THEME_KEY) || themes.light;
 };
 
 export const setStoredTheme = (theme) => {

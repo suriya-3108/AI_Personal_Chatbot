@@ -60,7 +60,11 @@ html, body {
   transform: translateZ(0);
 }
 
-[data-theme='dark'] body {
+html[data-theme='dark'] {
+  background-color: var(--bg-dark);
+}
+
+html[data-theme='dark'] body {
   background-color: var(--bg-dark);
   color: var(--text-dark);
 }

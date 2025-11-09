@@ -8,6 +8,10 @@ const clean = (val) => {
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/[\r\n]+/g, "\n")
     .replace(/\u0000/g, "")
+    // Remove emojis and other special characters that break formatting
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
+    // Remove other problematic characters
+    .replace(/[^\x00-\x7F]/g, "")
     .trim();
 };
 
@@ -20,14 +24,17 @@ const capitalizeName = (name) => {
     .join(' ');
 };
 
-// Safe text splitting function
+// Safe text splitting function with better emoji handling
 const safeSplitText = (pdf, text, maxWidth) => {
   try {
-    return pdf.splitTextToSize(text, maxWidth);
+    // First clean the text of emojis and problematic characters
+    const cleanText = clean(text);
+    return pdf.splitTextToSize(cleanText, maxWidth);
   } catch (error) {
     console.warn("Text splitting failed, using fallback:", error);
     // Fallback: split by spaces and manually break lines
-    const words = text.split(' ');
+    const cleanText = clean(text);
+    const words = cleanText.split(' ');
     const lines = [];
     let currentLine = '';
     
@@ -147,7 +154,7 @@ export const generatePDF = (messages = [], userName = "User", chatbotName = "AI 
       pdf.setTextColor(0, 0, 0); // black
     }
 
-    // Split text into lines
+    // Split text into lines (emoji cleaning happens inside safeSplitText)
     const lines = safeSplitText(pdf, content, maxWidth - 20);
     
     for (const line of lines) {
