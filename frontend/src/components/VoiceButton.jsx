@@ -1,108 +1,84 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import RecordRTC from 'recordrtc';
 import { Mic, Square } from 'lucide-react';
 
-const VoiceButton = ({ 
-  onTranscript, 
-  theme, 
-  disabled = false,
-  className = '' 
-}) => {
+const VoiceButton = ({ onTranscript, disabled = false, className = '' }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [audioChunks, setAudioChunks] = useState([]);
+  const [recorder, setRecorder] = useState(null);
 
   const startRecording = async () => {
     try {
-      if (!navigator.mediaDevices || !window.MediaRecorder) {
-        alert('Voice recording is not supported in your browser. Please use Chrome, Firefox, or Edge.');
-        return;
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const chunks = [];
 
-      recorder.ondataavailable = (event) => {
-        chunks.push(event.data);
-      };
+      const audioRecorder = new RecordRTC(stream, {
+        type: 'audio',
+        mimeType: 'audio/wav',
+        recorderType: RecordRTC.StereoAudioRecorder,
+        desiredSampRate: 16000,
+        numberOfAudioChannels: 1,
+      });
 
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-        
-        try {
-          const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.wav');
-          
-          const response = await fetch('http://localhost:5000/api/chat/speech-to-text', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: formData
-          });
+      audioRecorder.startRecording();
+      setRecorder(audioRecorder);
+      setIsRecording(true);
 
-          const data = await response.json();
-          if (data.text && data.text !== 'Sorry, I could not understand the audio') {
-            onTranscript(data.text);
-          } else {
-            alert('Could not understand audio. Please try again.');
-          }
-        } catch (error) {
-          console.error('Speech to text error:', error);
-          alert('Error processing voice input. Please try again.');
+    } catch (error) {
+      console.error('Mic error:', error);
+      alert('Microphone access failed.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recorder) return;
+
+    recorder.stopRecording(async () => {
+      const audioBlob = recorder.getBlob();
+
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice.wav');
+
+      try {
+        const response = await fetch('http://localhost:5000/api/chat/speech-to-text', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.text) {
+          onTranscript(data.text);
+        } else {
+          alert('Could not understand audio.');
         }
 
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setAudioChunks(chunks);
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      if (error.name === 'NotAllowedError') {
-        alert('Microphone access denied. Please allow microphone access to use voice input.');
-      } else {
-        alert('Error accessing microphone. Please check your microphone settings.');
+      } catch (err) {
+        console.error('Speech-to-text error:', err);
+        alert('Something went wrong. Please try again.');
       }
-    }
-  };
 
-  const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
       setIsRecording(false);
-      setMediaRecorder(null);
-    }
-  };
-
-  const handleClick = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+      setRecorder(null);
+    });
   };
 
   return (
     <button
-      onClick={handleClick}
+      onClick={isRecording ? stopRecording : startRecording}
       disabled={disabled}
-      className={`p-3 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-30 disabled:cursor-not-allowed ${
-        isRecording 
-          ? 'bg-red-500 text-white hover:bg-red-600' 
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      } ${className}`}
+      className={`relative p-3 rounded-xl transition-all duration-300 focus:outline-none
+        ${isRecording 
+          ? 'bg-red-600 text-white shadow-lg scale-110 animate-pulse' 
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+        }
+        ${className}
+      `}
       title={isRecording ? 'Stop recording' : 'Start voice input'}
     >
-      {isRecording ? (
-        <Square className="h-5 w-5" />
-      ) : (
-        <Mic className="h-5 w-5" />
-      )}
-      
-      {/* Recording indicator */}
+      {isRecording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+
+      {/* 🔴 Blinking Red Dot While Recording */}
       {isRecording && (
         <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full">
           <span className="absolute inset-0 h-3 w-3 bg-red-500 rounded-full animate-ping"></span>
